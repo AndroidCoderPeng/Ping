@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -16,8 +17,10 @@ import com.css.jyjt.ping.bean.ResultBean;
 import com.css.jyjt.ping.utils.PingHelper;
 import com.gyf.immersionbar.ImmersionBar;
 import com.pengxh.app.multilib.base.DoubleClickExitActivity;
+import com.pengxh.app.multilib.utils.DensityUtil;
 import com.pengxh.app.multilib.utils.StatusBarColorHelper;
 import com.pengxh.app.multilib.widget.EasyToast;
+import com.pengxh.app.multilib.widget.dialog.InputDialog;
 
 import java.lang.ref.WeakReference;
 import java.text.NumberFormat;
@@ -52,6 +55,7 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
     @BindView(R.id.startPing)
     ImageButton startPing;
 
+    private String[] spinnerItems = new String[]{"请输入您要检测的地址", "www.hao123.com", "www.baidu.com", "www.google.com", "59.255.102.5", "其他"};
     private Timer pingTimer;
     private long sendTimes = 0;//发送次数
     private long receiveTimes = 0;//接收次数
@@ -76,12 +80,32 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
 
     @Override
     public void initEvent() {
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spinnerItems);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        addressSpinner.setDropDownVerticalOffset(DensityUtil.dp2px(this, 48));
+        addressSpinner.setAdapter(spinnerAdapter);
         addressSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                String s = getResources().getStringArray(R.array.spinner_values)[pos];
+                String s = spinnerItems[pos];
                 if (s.equals("其他")) {
+                    new InputDialog.Builder()
+                            .setContext(MainActivity.this)
+                            .setTitle("")
+                            .setOutsideCancelable(false)
+                            .setNegativeButton("")
+                            .setPositiveButton("")
+                            .setOnDialogClickListener(new InputDialog.OnDialogClickListener() {
+                                @Override
+                                public void onConfirmClick(String value) {
 
+                                }
+
+                                @Override
+                                public void onCancelClick() {
+
+                                }
+                            }).build().show();
                 } else {
                     address = s;
                 }
