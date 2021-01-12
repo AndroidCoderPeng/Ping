@@ -3,9 +3,9 @@ package com.css.jyjt.ping.ui;
 import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -46,11 +46,14 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
     TextView failedTimesView;
     @BindView(R.id.lossRateView)
     TextView lossRateView;
+    @BindView(R.id.startPing)
+    ImageButton startPing;
 
     private Timer pingTimer;
     private long sendTimes = 0;//发送次数
     private long receiveTimes = 0;//接收次数
     private long failedTimes = 0;//失败次数
+    private boolean isRunning = false;//定时器是否还在运行中
     private String address;
 
     @Override
@@ -62,7 +65,6 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
     public void initData() {
         StatusBarColorHelper.setColor(this, getResources().getColor(R.color.colorPrimary));
         ImmersionBar.with(this).init();
-        pingTimer = new Timer();
     }
 
     @Override
@@ -85,7 +87,7 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
         });
     }
 
-    @OnClick({R.id.startPing})
+    @OnClick({R.id.startPing, R.id.stopPing})
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.startPing) {
@@ -93,18 +95,27 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
                 EasyToast.showToast("输入错误，请检查！", EasyToast.WARING);
                 return;
             }
+            pingTimer = new Timer();
             pingTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    ResultBean resultBean = ping(address);
                     Message message = handler.obtainMessage();
                     message.what = 110;
-                    message.obj = resultBean;
+                    message.obj = ping(address);
                     handler.sendMessage(message);
-
+                    //次数统计
                     sendTimes++;
+                    //timer状态管理
+                    isRunning = true;
+                    handler.sendEmptyMessage(111);
                 }
             }, 0, 1000);
+        } else if (v.getId() == R.id.stopPing) {
+            if (isRunning && pingTimer != null) {
+                pingTimer.cancel();
+                isRunning = false;
+                handler.sendEmptyMessage(111);
+            }
         }
     }
 
@@ -124,7 +135,7 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
                 }
                 resultHostView.setText(resultBean.getTitle());
                 String content = resultBean.getContent();
-                Log.d(TAG, content);
+//                Log.d(TAG, content);
                 int endIndex = content.indexOf("--- ");
                 pingResultView.append(content.substring(0, endIndex).trim() + "\n");
                 if (content.contains("100% packet loss")) {
@@ -146,6 +157,12 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
                     numberInstance.setMaximumFractionDigits(2);
                     double rate = ((double) failedTimes / sendTimes) * 100;
                     lossRateView.setText("丢包率：" + numberInstance.format(rate) + "%");
+                }
+            } else if (msg.what == 111) {
+                if (isRunning) {
+                    startPing.setEnabled(false);
+                } else {
+                    startPing.setEnabled(true);
                 }
             }
         }
