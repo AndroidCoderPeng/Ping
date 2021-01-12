@@ -14,9 +14,9 @@ import androidx.annotation.NonNull;
 import com.css.jyjt.ping.R;
 import com.css.jyjt.ping.bean.ResultBean;
 import com.css.jyjt.ping.utils.PingHelper;
-import com.css.jyjt.ping.utils.StatusBarColorHelper;
 import com.gyf.immersionbar.ImmersionBar;
 import com.pengxh.app.multilib.base.DoubleClickExitActivity;
+import com.pengxh.app.multilib.utils.StatusBarColorHelper;
 import com.pengxh.app.multilib.widget.EasyToast;
 
 import java.text.NumberFormat;
