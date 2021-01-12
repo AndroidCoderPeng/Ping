@@ -89,6 +89,14 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
                 // Another interface callback
             }
         });
+        //清屏
+        pingResultView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                pingResultView.setText("");
+                return true;
+            }
+        });
     }
 
     @OnClick({R.id.startPing, R.id.stopPing})
@@ -157,33 +165,31 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
 //                    --- www.a.shifen.com ping statistics ---
 //                            1 packets transmitted, 1 received, 0% packet loss, time 0ms
 //                    rtt min/avg/max/mdev = 11.871/11.871/11.871/0.000 ms
-//                    receiveTimes++;
-//                    receiveTimesView.setText("返回成功：" + receiveTimes + "次");
                         receiveTimes++;
                         receiveTimesView.setText("返回成功：" + receiveTimes + "次");
+                        /**
+                         * 获取延迟秒数
+                         * 64 bytes from 220.181.107.181: icmp_seq=1 ttl=52 time=33.7 ms
+                         *
+                         * [64 bytes from 220.181.107.181: icmp_seq, 1 ttl, 52 time, 34.0 ms]
+                         *
+                         * 23.4 ms
+                         * */
+                        double millis = Double.parseDouble(content.split("=")[3].split(" ")[0]);
+                        if (millis < min) {
+                            min = millis;
+                            minDelayedView.setText("最低延迟：" + min + "ms");
+                        }
+                        if (millis > max) {
+                            max = millis;
+                            maxDelayedView.setText("最高延迟：" + max + "ms");
+                        }
                     }
                     if (sendTimes != 0) {
                         NumberFormat numberInstance = NumberFormat.getNumberInstance();
                         numberInstance.setMaximumFractionDigits(2);
                         double rate = ((double) failedTimes / sendTimes) * 100;
                         lossRateView.setText("丢包率：" + numberInstance.format(rate) + "%");
-                    }
-                    /**
-                     * 获取延迟秒数
-                     * 64 bytes from 220.181.107.181: icmp_seq=1 ttl=52 time=33.7 ms
-                     *
-                     * [64 bytes from 220.181.107.181: icmp_seq, 1 ttl, 52 time, 34.0 ms]
-                     *
-                     * 23.4 ms
-                     * */
-                    double millis = Double.parseDouble(content.split("=")[3].split(" ")[0]);
-                    if (millis < min) {
-                        min = millis;
-                        minDelayedView.setText("最低延迟：" + min + "ms");
-                    }
-                    if (millis > max) {
-                        max = millis;
-                        maxDelayedView.setText("最高延迟：" + max + "ms");
                     }
                     break;
                 case 111:
