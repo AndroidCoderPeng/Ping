@@ -19,6 +19,7 @@ import com.pengxh.app.multilib.base.DoubleClickExitActivity;
 import com.pengxh.app.multilib.utils.StatusBarColorHelper;
 import com.pengxh.app.multilib.widget.EasyToast;
 
+import java.lang.ref.WeakReference;
 import java.text.NumberFormat;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -59,6 +60,7 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
     private String address;
     private double min = 9999d;//最小延迟初始值
     private double max = 0d;//最大延迟初始值
+    private WeakReferenceHandler handler;
 
     @Override
     public int initLayoutView() {
@@ -69,6 +71,7 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
     public void initData() {
         StatusBarColorHelper.setColor(this, getResources().getColor(R.color.colorPrimary));
         ImmersionBar.with(this).init();
+        handler = new WeakReferenceHandler(this);
     }
 
     @Override
@@ -136,37 +139,45 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
         }
     }
 
-    @SuppressLint("HandlerLeak")
-    private Handler handler = new Handler() {
+    /**
+     * 继承Handler，解决Handler内存泄漏
+     */
+    private static class WeakReferenceHandler extends Handler {
+        private WeakReference<MainActivity> mWeakReference;
+
+        WeakReferenceHandler(MainActivity activity) {
+            mWeakReference = new WeakReference<>(activity);
+        }
+
         @SuppressLint("SetTextI18n")
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
+            MainActivity mainActivity = mWeakReference.get();
             switch (msg.what) {
                 case 110:
-                    sendTimesView.setText("发送数据：" + sendTimes + "次");
-
+                    mainActivity.sendTimesView.setText("发送数据：" + mainActivity.sendTimes + "次");
                     ResultBean resultBean = (ResultBean) msg.obj;
                     if (resultBean == null) {
                         EasyToast.showToast("无法访问目标地址，请检查！", EasyToast.WARING);
                         return;
                     }
-                    resultHostView.setText(resultBean.getTitle());
+                    mainActivity.resultHostView.setText(resultBean.getTitle());
                     String s = resultBean.getContent();
                     int endIndex = s.indexOf("--- ");
                     String content = s.substring(0, endIndex).trim();
-                    pingResultView.append(content + "\n");
+                    mainActivity.pingResultView.append(content + "\n");
                     if (s.contains("100% packet loss")) {
 //                    --- www.google.com ping statistics ---
 //                            1 packets transmitted, 0 received, 100% packet loss, time 0ms
-                        failedTimes++;
-                        failedTimesView.setText("返回失败：" + failedTimes + "次");
+                        mainActivity.failedTimes++;
+                        mainActivity.failedTimesView.setText("返回失败：" + mainActivity.failedTimes + "次");
                     } else {
 //                    --- www.a.shifen.com ping statistics ---
 //                            1 packets transmitted, 1 received, 0% packet loss, time 0ms
 //                    rtt min/avg/max/mdev = 11.871/11.871/11.871/0.000 ms
-                        receiveTimes++;
-                        receiveTimesView.setText("返回成功：" + receiveTimes + "次");
+                        mainActivity.receiveTimes++;
+                        mainActivity.receiveTimesView.setText("返回成功：" + mainActivity.receiveTimes + "次");
                         /**
                          * 获取延迟秒数
                          * 64 bytes from 220.181.107.181: icmp_seq=1 ttl=52 time=33.7 ms
@@ -176,32 +187,32 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
                          * 23.4 ms
                          * */
                         double millis = Double.parseDouble(content.split("=")[3].split(" ")[0]);
-                        if (millis < min) {
-                            min = millis;
-                            minDelayedView.setText("最低延迟：" + min + "ms");
+                        if (millis < mainActivity.min) {
+                            mainActivity.min = millis;
+                            mainActivity.minDelayedView.setText("最低延迟：" + mainActivity.min + "ms");
                         }
-                        if (millis > max) {
-                            max = millis;
-                            maxDelayedView.setText("最高延迟：" + max + "ms");
+                        if (millis > mainActivity.max) {
+                            mainActivity.max = millis;
+                            mainActivity.maxDelayedView.setText("最高延迟：" + mainActivity.max + "ms");
                         }
                     }
-                    if (sendTimes != 0) {
+                    if (mainActivity.sendTimes != 0) {
                         NumberFormat numberInstance = NumberFormat.getNumberInstance();
                         numberInstance.setMaximumFractionDigits(2);
-                        double rate = ((double) failedTimes / sendTimes) * 100;
-                        lossRateView.setText("丢包率：" + numberInstance.format(rate) + "%");
+                        double rate = ((double) mainActivity.failedTimes / mainActivity.sendTimes) * 100;
+                        mainActivity.lossRateView.setText("丢包率：" + numberInstance.format(rate) + "%");
                     }
                     break;
                 case 111:
-                    if (isRunning) {
-                        startPing.setEnabled(false);
+                    if (mainActivity.isRunning) {
+                        mainActivity.startPing.setEnabled(false);
                     } else {
-                        startPing.setEnabled(true);
+                        mainActivity.startPing.setEnabled(true);
                     }
                     break;
                 default:
                     break;
             }
         }
-    };
+    }
 }
