@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="spinner_values">
+        <item>请输入您要检测的地址</item>
+        <item>www.hao123.com</item>
+        <item>www.baidu.com</item>
+        <item>www.google.com</item>
+        <item>59.255.102.5</item>
+        <item>其他</item>
+    </string-array>
+</resources>
