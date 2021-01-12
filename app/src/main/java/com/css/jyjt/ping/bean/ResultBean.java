@@ -1,9 +1,8 @@
-package com.css.jyjt.ping;
+package com.css.jyjt.ping.bean;
 
 public class ResultBean {
     private String title;
     private String content;
-    private String result;
 
     public String getTitle() {
         return title;
@@ -19,13 +18,5 @@ public class ResultBean {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
     }
 }

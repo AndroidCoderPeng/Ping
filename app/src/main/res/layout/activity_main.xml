@@ -52,8 +52,8 @@
                 android:id="@+id/resultHostView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="18sp" />
+                android:textColor="@color/colorAccent"
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/pingResultView"
@@ -89,7 +89,7 @@
                     android:layout_centerVertical="true"
                     android:text="统计"
                     android:textColor="@color/colorAccent"
-                    android:textSize="18sp" />
+                    android:textSize="16sp" />
 
                 <ImageButton
                     android:id="@+id/stopPing"
@@ -105,34 +105,58 @@
                 android:layout_marginVertical="1dp"
                 android:background="@color/lightGray" />
 
-            <TextView
-                android:id="@+id/sendTimesView"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="发送数据：0次"
-                android:textSize="18sp" />
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/receiveTimesView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="接收数据：0次"
-                android:textSize="18sp" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/failedTimesView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="返回失败：0次"
-                android:textSize="18sp" />
+                    <TextView
+                        android:id="@+id/sendTimesView"
+                        style="@style/TextViewStyle"
+                        android:text="发送数据：0次" />
 
-            <TextView
-                android:id="@+id/lossRateView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="丢包率：0%"
-                android:textColor="@color/red"
-                android:textSize="18sp" />
+                    <TextView
+                        android:id="@+id/receiveTimesView"
+                        style="@style/TextViewStyle"
+                        android:text="接收数据：0次" />
+
+                    <TextView
+                        android:id="@+id/failedTimesView"
+                        style="@style/TextViewStyle"
+                        android:text="返回失败：0次" />
+
+                    <TextView
+                        android:id="@+id/lossRateView"
+                        style="@style/TextViewStyle"
+                        android:text="丢包率：0%"
+                        android:textColor="@color/red" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/minDelayedView"
+                        style="@style/TextViewStyle"
+                        android:text="最低延迟：0ms"
+                        android:textColor="@color/colorAccent" />
+
+                    <TextView
+                        android:id="@+id/maxDelayedView"
+                        style="@style/TextViewStyle"
+                        android:text="最高延迟：0ms"
+                        android:textColor="@color/red" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </LinearLayout>

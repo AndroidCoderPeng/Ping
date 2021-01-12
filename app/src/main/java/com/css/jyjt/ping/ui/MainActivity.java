@@ -12,7 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.css.jyjt.ping.R;
-import com.css.jyjt.ping.ResultBean;
+import com.css.jyjt.ping.bean.ResultBean;
 import com.css.jyjt.ping.utils.PingHelper;
 import com.css.jyjt.ping.utils.StatusBarColorHelper;
 import com.gyf.immersionbar.ImmersionBar;
@@ -44,6 +44,10 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
     TextView failedTimesView;
     @BindView(R.id.lossRateView)
     TextView lossRateView;
+    @BindView(R.id.minDelayedView)
+    TextView minDelayedView;
+    @BindView(R.id.maxDelayedView)
+    TextView maxDelayedView;
     @BindView(R.id.startPing)
     ImageButton startPing;
 
@@ -53,6 +57,8 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
     private long failedTimes = 0;//失败次数
     private boolean isRunning = false;//定时器是否还在运行中
     private String address;
+    private double min = 9999d;//最小延迟初始值
+    private double max = 0d;//最大延迟初始值
 
     @Override
     public int initLayoutView() {
@@ -138,11 +144,11 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
                         return;
                     }
                     resultHostView.setText(resultBean.getTitle());
-                    String content = resultBean.getContent();
-//                Log.d(TAG, content);
-                    int endIndex = content.indexOf("--- ");
-                    pingResultView.append(content.substring(0, endIndex).trim() + "\n");
-                    if (content.contains("100% packet loss")) {
+                    String s = resultBean.getContent();
+                    int endIndex = s.indexOf("--- ");
+                    String content = s.substring(0, endIndex).trim();
+                    pingResultView.append(content + "\n");
+                    if (s.contains("100% packet loss")) {
 //                    --- www.google.com ping statistics ---
 //                            1 packets transmitted, 0 received, 100% packet loss, time 0ms
                         failedTimes++;
@@ -161,6 +167,23 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
                         numberInstance.setMaximumFractionDigits(2);
                         double rate = ((double) failedTimes / sendTimes) * 100;
                         lossRateView.setText("丢包率：" + numberInstance.format(rate) + "%");
+                    }
+                    /**
+                     * 获取延迟秒数
+                     * 64 bytes from 220.181.107.181: icmp_seq=1 ttl=52 time=33.7 ms
+                     *
+                     * [64 bytes from 220.181.107.181: icmp_seq, 1 ttl, 52 time, 34.0 ms]
+                     *
+                     * 23.4 ms
+                     * */
+                    double millis = Double.parseDouble(content.split("=")[3].split(" ")[0]);
+                    if (millis < min) {
+                        min = millis;
+                        minDelayedView.setText("最低延迟：" + min + "ms");
+                    }
+                    if (millis > max) {
+                        max = millis;
+                        maxDelayedView.setText("最高延迟：" + max + "ms");
                     }
                     break;
                 case 111:

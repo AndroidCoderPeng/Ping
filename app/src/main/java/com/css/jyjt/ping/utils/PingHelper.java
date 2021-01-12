@@ -1,6 +1,6 @@
 package com.css.jyjt.ping.utils;
 
-import com.css.jyjt.ping.ResultBean;
+import com.css.jyjt.ping.bean.ResultBean;
 
 import java.io.BufferedReader;
 import java.io.IOException;
