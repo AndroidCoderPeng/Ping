@@ -118,6 +118,10 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
                             .setOnDialogClickListener(new InputDialog.OnDialogClickListener() {
                                 @Override
                                 public void onConfirmClick(String value) {
+                                    if (value.equals("")) {
+                                        EasyToast.showToast("操作错误，请重试！", EasyToast.ERROR);
+                                        return;
+                                    }
                                     dataLinkedListList.add(dataLinkedListList.size() - 1, value.toLowerCase(Locale.CHINA));
                                     spinnerAdapter.notifyDataSetChanged();
                                 }
