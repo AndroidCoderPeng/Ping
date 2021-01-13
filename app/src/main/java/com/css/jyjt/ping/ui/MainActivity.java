@@ -24,6 +24,9 @@ import com.pengxh.app.multilib.widget.dialog.InputDialog;
 
 import java.lang.ref.WeakReference;
 import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -55,16 +58,18 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
     @BindView(R.id.startPing)
     ImageButton startPing;
 
-    private String[] spinnerItems = new String[]{"请输入您要检测的地址", "www.hao123.com", "www.baidu.com", "www.google.com", "59.255.102.5", "其他"};
+
+    private String[] defaultData = {"请输入您要检测的地址", "www.baidu.com", "www.google.com", "59.255.102.5", "其他"};
+    private LinkedList<String> dataLinkedListList = new LinkedList<>();
     private Timer pingTimer;
     private long sendTimes = 0;//发送次数
     private long receiveTimes = 0;//接收次数
     private long failedTimes = 0;//失败次数
     private boolean isRunning = false;//定时器是否还在运行中
-    private String address;
     private double min = 9999d;//最小延迟初始值
     private double max = 0d;//最大延迟初始值
     private WeakReferenceHandler handler;
+    private ArrayAdapter<String> spinnerAdapter;
 
     @Override
     public int initLayoutView() {
@@ -75,47 +80,14 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
     public void initData() {
         StatusBarColorHelper.setColor(this, getResources().getColor(R.color.colorPrimary));
         ImmersionBar.with(this).init();
+        //默认数据
+        dataLinkedListList.addAll(Arrays.asList(defaultData));
         handler = new WeakReferenceHandler(this);
     }
 
     @Override
     public void initEvent() {
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spinnerItems);
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        addressSpinner.setDropDownVerticalOffset(DensityUtil.dp2px(this, 48));
-        addressSpinner.setAdapter(spinnerAdapter);
-        addressSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                String s = spinnerItems[pos];
-                if (s.equals("其他")) {
-                    new InputDialog.Builder()
-                            .setContext(MainActivity.this)
-                            .setTitle("")
-                            .setOutsideCancelable(false)
-                            .setNegativeButton("")
-                            .setPositiveButton("")
-                            .setOnDialogClickListener(new InputDialog.OnDialogClickListener() {
-                                @Override
-                                public void onConfirmClick(String value) {
-
-                                }
-
-                                @Override
-                                public void onCancelClick() {
-
-                                }
-                            }).build().show();
-                } else {
-                    address = s;
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Another interface callback
-            }
-        });
+        spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, dataLinkedListList);
         //清屏
         pingResultView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -126,11 +98,52 @@ public class MainActivity extends DoubleClickExitActivity implements View.OnClic
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        addressSpinner.setDropDownVerticalOffset(DensityUtil.dp2px(this, 48));
+        addressSpinner.setAdapter(spinnerAdapter);
+        addressSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                String s = dataLinkedListList.get(pos);
+                if (s.equals("其他")) {
+                    new InputDialog.Builder()
+                            .setContext(MainActivity.this)
+                            .setTitle("")
+                            .setOutsideCancelable(false)
+                            .setNegativeButton("")
+                            .setPositiveButton("")
+                            .setOnDialogClickListener(new InputDialog.OnDialogClickListener() {
+                                @Override
+                                public void onConfirmClick(String value) {
+                                    dataLinkedListList.add(dataLinkedListList.size() - 1, value.toLowerCase(Locale.CHINA));
+                                    spinnerAdapter.notifyDataSetChanged();
+                                }
+
+                                @Override
+                                public void onCancelClick() {
+
+                                }
+                            }).build().show();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Another interface callback
+            }
+        });
+    }
+
     @OnClick({R.id.startPing, R.id.stopPing})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.startPing:
+                int position = addressSpinner.getSelectedItemPosition();
+                String address = dataLinkedListList.get(position);
                 if (address.equals("") || address.contains("请输入您要检测的地址")) {
                     EasyToast.showToast("输入错误，请检查！", EasyToast.WARING);
                     return;
